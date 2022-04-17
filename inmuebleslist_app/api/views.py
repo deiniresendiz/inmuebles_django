@@ -1,9 +1,51 @@
-from rest_framework import status
+from rest_framework import status, generics, mixins
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from inmuebleslist_app.api.serializers import EdificacionSerializer, EmpresaSerializer
-from inmuebleslist_app.models import Edificacion, Emperesa
+from inmuebleslist_app.api.serializers import EdificacionSerializer, EmpresaSerializer, ComentarioSerializer
+from inmuebleslist_app.models import Edificacion, Emperesa, Comentario
+
+class ComentarioCreate(generics.CreateAPIView):
+    serializer_class = ComentarioSerializer
+
+    def perform_create(self, serializer):
+        pk = self.kwargs.get('pk')
+        inmueble = Edificacion.objects.get(pk=pk)
+        serializer.save(edificacion=inmueble)
+
+
+class ComentarioList(generics.ListCreateAPIView):
+    serializer_class = ComentarioSerializer
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        return Comentario.objects.filter(edificacion=pk)
+
+class ComentarioDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Comentario.objects.all()
+    serializer_class = ComentarioSerializer
+
+# class ComentarioList(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+#     queryset = Edificacion.objects.all()
+#     serializer_class = ComentarioSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
+#
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
+#
+# class ComentarioDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+#     queryset = Edificacion.objects.all()
+#     serializer_class = ComentarioSerializer
+#
+#     def get(self, request, *args, **kwargs):
+#         return self.retrieve(request, *args, **kwargs)
+#
+#     def put(self, request, *args, **kwargs):
+#         return self.update(request, *args, **kwargs)
+#
+#     def delete(self, request, *args, **kwargs):
+#         return self.destroy(request, *args, **kwargs)
 
 class EmpresaAV(APIView):
     def get(self, request):
